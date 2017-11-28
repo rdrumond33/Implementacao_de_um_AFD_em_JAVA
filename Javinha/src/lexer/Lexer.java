@@ -1,9 +1,8 @@
 package lexer;
 
 import java.io.*;
-import java.util.*;
 
-public class Lexer{
+public class Lexer {
 
     private static final int END_OF_FILE = -1; // constante para fim do arquivo
     private static int lookahead = 0; // armazena o último caractere lido do arquivo	
@@ -61,25 +60,6 @@ public class Lexer{
         }
     }
 
-    /* TODO:
-    //[1]   Voce devera se preocupar quando incremetar as linhas e colunas,
-    //      assim como quando decrementar ou reseta-las.
-    //[2]   Toda vez que voce encontrar um lexema completo, voce deve retornar
-    //      um objeto new Token(Tag, "lexema", linha, coluna). Cuidado com as
-    //      palavras reservadas que ja sao codastradas na TS. Essa consulta
-    //      voce devera fazer somente quando encontrar um Identificador.
-    //[3]   Se o caractere lido nao casar com nenhum caractere esperado,
-    //      apresentar a mensagem de erro na linha e coluna correspondente.
-    //[4]   Dica: Para saber se 'c' eh uma letra, use Character.isLetter(c).
-    //[5]   Dica: a variavel 'lexema' eh responsavel por montar o lexema pelo 
-    //      metodo lexema.append(c).
-    //[6]   Atencao com as strings. Assim que aparacer o segundo '"' (aspas duplas) 
-    //      retornar a string. Cuidado, strings devem ser fechadas antes do 
-    //      fim do arquivo ou de quebra de linha.
-    //[7]   Nao eh necessario criar nenhuma outra variavel para finalizar seu AFD.
-     */
-    // Obtém próximo token >> aqui sim vc vai tter que completar
-    // esse metodo eh o AFD
     public Token proxToken() {
 
         // essa variavel armaeza o lexema (palavra) construido
@@ -100,9 +80,7 @@ public class Lexer{
                 lookahead = instance_file.read();
                 if (lookahead != END_OF_FILE) {
                     c = (char) lookahead;
-                    n_column++;
-                    // Dica: lemos um caractere...temos que controlar a posicao
-                    // desse caractere por <linha, coluna>...o que fazer??
+                    n_column++;//Toda vez que avançar o ponteiro ira acrecentar o numero de coluna
                 }
             } catch (IOException e) {
                 System.out.println("Erro na leitura do arquivo");
@@ -111,9 +89,6 @@ public class Lexer{
 
             // movimentacao do automato
             switch (estado) {
-                // estado = 0 representa o estado inicial
-                // temos que ter uma qtde de cases para cobrir as movimentacoes
-                // do nosso AFD.
 
                 case 0:
                     if (lookahead == END_OF_FILE) // fim de arquivo. hora de parar
@@ -121,34 +96,25 @@ public class Lexer{
                         return new Token(Tag.EOF, "EOF", n_line, n_column);
                     } else if (c == ' ' || c == '\t' || c == '\n' || c == '\r') {
                         // Permance no estado = 0
-                        if (c == '\n' || c == '\r') {
+                        if (c == '\n' || c == '\r') {//Reconhecer quebra de linha
                             n_column = 1;
                             n_line++;
-                        } else if (c == '\t') {
+                        } else if (c == '\t') {//Reconhecer TAB
 
                             n_column += 3;
 
                         }
 
-                        // Dica: alterar o valor da linha e coluna caso necessario
                     } else if (c == '+') {//Estado Q1
-                        // repare: isso indica que reconheci o + e vou movimentar
-                        // do estado 0 para o estado 1. 
-                        // MAS eu nao vou criar o estado 1, pois pra gente eh 
-                        // desnecessario fazer outra consulta a toa. Irei
-                        // apenas retornar o token. Toda vez que retornarmos um
-                        // token, saimos (return) do AFD (metodo proxToken()).
-
                         return new Token(Tag.RELOP_PLUS, "+", n_line, n_column);
                     } else if (c == '-') {// Estado Q2
                         return new Token(Tag.RELOP_MINUS, "-", n_line, n_column);
                     } else if (c == '*') {//Estado Q3
-
                         return new Token(Tag.RELOP_MULT, "*", n_line, n_column);
                     } else if (c == '/') {
                         estado = 24;
                     } else if (c == '<') {
-                        lexema.append(c);
+                        lexema.append(c);//adiciona o caracter C e vai prar o estado=5
                         estado = 5;//Estado Q5
                     } else if (c == '>') {
                         lexema.append(c);
@@ -161,42 +127,33 @@ public class Lexer{
                         estado = 14;
                     } else if (Character.isLetter(c)) {//Estado Q16
                         lexema.append(c);
-
                         estado = 16;
-
                     } else if (Character.isDigit(c)) {//Estado Q18
                         lexema.append(c); // comecamos a construir um numero
                         estado = 18; // vamos para o estado 18
                     } else if (c == '"') {//Estado Q23
                         estado = 23;
                     } else if (c == '(') {//Estado Q25
-
                         return new Token(Tag.SMB_OP, "(", n_line, n_column);
                     } else if (c == ')') {//Estado Q26
-
                         return new Token(Tag.SMB_CP, ")", n_line, n_column);
                     } else if (c == ';') {//Estado Q27
-
                         return new Token(Tag.SMB_SEMICOLON, ";", n_line, n_column);
-
                     } else {
-
                         sinalizaErro("Simbolo " + c + " invalido na linha " + n_line + " e coluna " + n_column);
                         return null;
                     }
                     break;
 
                 case 5:
+
                     if (c == '=') {//Estado Q6
                         estado = 0;
-
                         return new Token(Tag.RELOP_LE, "<=", n_line, n_column);
                     } else {//Estado Q7
-
                         estado = 0;
                         retornaPonteiro();
                         return new Token(Tag.RELOP_LT, "<", n_line, n_column);
-
                     }
                 case 8:
                     if (c == '=') {//Estado Q9
@@ -205,7 +162,6 @@ public class Lexer{
                         return new Token(Tag.RELOP_LE, ">=", n_line, n_column);
 
                     } else {//Estado Q10
-
                         estado = 0;
                         retornaPonteiro();
                         return new Token(Tag.RELOP_GT, ">", n_line, n_column);
@@ -231,18 +187,13 @@ public class Lexer{
                         estado = 0;
                         return new Token(Tag.RELOP_NQ, "!=", n_line, n_column);
 
-                        // Dica: retornar novo objeto Token(Tag.RELOP_NQ, "!=", n_line, n_column);
                     } else {//Erro
                         sinalizaErro("invalido na linha " + n_line + " e coluna " + n_column);
                         return null;
-
                     }
-               
 
                 case 16:
-
                     if (Character.isLetterOrDigit(c) || c == '_') {//Estado 16
-
                         lexema.append(c);
                     } else {
                         estado = 0;
@@ -255,7 +206,6 @@ public class Lexer{
                             return new Token(Tag.ID, lexema.toString(), n_line, n_column);
                         } else {
                             estado = 0;
-
                             return token;
                         }
                     }
@@ -265,17 +215,15 @@ public class Lexer{
                     if (Character.isDigit(c)) {//Estado Q18
 
                         lexema.append(c);
-                    }
-                    else if (c == '.') {//Estado Q20
+                    } else if (c == '.') {//Estado Q20
                         lexema.append(c);
                         estado = 20;
                     } else {//Estado Q19
                         estado = 0;
-                        if (c==' ') {
-                        retornaPonteiro();       
+                        if (c == ' ') {
+                            retornaPonteiro();
                         }
 
-                     
                         return new Token(Tag.INTEGER, lexema.toString(), n_line, n_column);
                     }
                     break;
@@ -285,7 +233,7 @@ public class Lexer{
                         lexema.append(c);
                         estado = 21;
                     } else {
-                         estado = 0;
+                        estado = 0;
                         sinalizaErro("ERRO! CUIDADO com a linha: " + n_line + " e coluna: " + n_column);
                         return null;
                     }
@@ -304,8 +252,6 @@ public class Lexer{
                     break;
                 case 23:
                     if (c == '"') {//Estado Q24
-                        // opa: temos o fim da string
-                        // dica: retorne o novo token que corresponde a string
                         estado = 0;
 
                         return new Token(Tag.STRING, lexema.toString(), n_line, n_column);
@@ -313,11 +259,8 @@ public class Lexer{
                         retornaPonteiro();
                         sinalizaErro("String não fechada antes de quebra de linha antes do fim de arquivo Linha: " + n_line + " Coluna: " + n_column);
 
-                        // situacao de erro: string não fechada antes de quebra de linha
-                        // o que fazer??
                         return null;
                     } else if (lookahead == END_OF_FILE) {
-                        // situacao de erro: string não fechada antes de fim de arquivo
                         sinalizaErro("String deve ser fechada com \" antes do fim de arquivo");
                         return null;
                     } else { // Se vier outro, permanece no estado 23
@@ -326,7 +269,7 @@ public class Lexer{
                     break;
 
                 case 24:
-                    if (c == '/') {
+                    if (c == '/') {//verificaçao se e um tokem de divisao ou comentario
                         coluna_do_cometario = n_column - 2;
                         estado = 25;
 
@@ -345,6 +288,9 @@ public class Lexer{
                 case 25:
                     if (Character.isLetter(c) || c == '_') {
 
+                    } else if (lookahead == END_OF_FILE) {
+                        sinalizaErro("Comentarionao  deve ser fechada com antes do fim de arquivo");
+                        return null;
                     } else if (c == '\n' || c == '\r') {
                         estado = 0;
                         retornaPonteiro();
@@ -370,7 +316,10 @@ public class Lexer{
 
                     break;
                 case 27:
-                    if (c == '/') {
+                    if (lookahead == END_OF_FILE) {
+                        sinalizaErro("Comentarionao  deve ser fechada com antes do fim de arquivo");
+                        return null;
+                    } else if (c == '/') {
                         estado = 0;
 
                         System.out.printf("Comentario de Varias Linhas '/**/' começa na Linha:%d da Coluna: %d e termina na linha: %d e Coluna:%d \n", Linha_de_comentario, coluna_do_cometario, n_line, n_column);
@@ -391,8 +340,7 @@ public class Lexer{
     public static void main(String[] args) {
         //integrantes da dupla: Rodrigo Drumond de Paula RA:11623863
         //e 
-       
-        
+
         Lexer lexer = new Lexer("HelloJavinha.jvn"); // parametro eh um programa em Javinha
         Token token;
 
